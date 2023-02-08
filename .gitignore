@@ -2,6 +2,6 @@ cookie/
 pixiv_img/
 .idea/
 __pycache__/
-PixivDownloader/__pycache__/
+PixivImageDownloader/__pycache__/
 error/__pycache__/
 commons/__pycache__/

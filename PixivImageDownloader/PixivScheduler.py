@@ -2,8 +2,8 @@ import os
 import time
 import logging
 from Error.Error import FuncNotExistsError
-from PixivDownloader.Downloader import Downloader
-from PixivDownloader.GifSynthesizer import GifSynthesizer
+from PixivImageDownloader.Downloader import Downloader
+from PixivImageDownloader.GifSynthesizer import GifSynthesizer
 
 
 class PixivScheduler(Downloader):

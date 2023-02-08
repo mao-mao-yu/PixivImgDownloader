@@ -1,5 +1,5 @@
 import os
-from PixivDownloader.ImageDataGetter import ImageDataGetter
+from PixivImageDownloader.ImageDataGetter import ImageDataGetter
 
 
 class MetadataProcessorData(ImageDataGetter):

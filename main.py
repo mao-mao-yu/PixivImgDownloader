@@ -1,4 +1,4 @@
-from PixivDownloader import *
+from PixivImageDownloader import *
 
 
 if __name__ == '__main__':
