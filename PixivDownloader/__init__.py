@@ -1,5 +1,5 @@
-from PixivDownloader.PixivMetadataProcessor import *
+from PixivDownloader.MetadataProcessor import *
 from PixivDownloader.Downloader import *
 from PixivDownloader.PixivScheduler import *
 from PixivDownloader.GifSynthesizer import *
-from PixivDownloader.PixivImageDataGetter import *
+from PixivDownloader.ImageDataGetter import *

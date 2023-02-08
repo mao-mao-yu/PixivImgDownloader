@@ -158,5 +158,3 @@ class PixivImageDataGetter:
         cookie = GetCookie.get_cookie(self.username, self.password)
         json_writer(self.cookie_path, cookie)
         return cookie
-
-

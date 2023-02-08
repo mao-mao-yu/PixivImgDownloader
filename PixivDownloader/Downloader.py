@@ -1,7 +1,7 @@
 import os
 from multiprocessing.dummy import Pool
 from Commons.Commons import binary_writer
-from PixivDownloader.PixivMetadataProcessor import PixivMetadataProcessorData
+from PixivDownloader.MetadataProcessor import PixivMetadataProcessorData
 from PixivDownloader.GifSynthesizer import GifSynthesizer
 
 
