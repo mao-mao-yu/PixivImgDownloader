@@ -1,8 +1,4 @@
 import os
-import re
-from Error.Error import *
-from Commons.Commons import *
-from Commons.MyDict import MyDict
 from PixivDownloader.PixivImageGetter import PixivImageGetter
 
 
