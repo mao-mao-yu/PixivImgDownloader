@@ -1,8 +1,8 @@
 import os
-from PixivDownloader.PixivImageGetter import PixivImageGetter
+from PixivDownloader.PixivImageDataGetter import PixivImageDataGetter
 
 
-class PixivMetadataProcessor(PixivImageGetter):
+class PixivMetadataProcessorData(PixivImageDataGetter):
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         self.multy_process = kwargs.pop('multy_process', False)
