@@ -6,6 +6,9 @@ from PixivImageDownloader.GifSynthesizer import GifSynthesizer
 
 
 class Downloader(MetadataProcessorData):
+    """
+    下载器
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -3,6 +3,9 @@ from PixivImageDownloader.ImageDataGetter import ImageDataGetter
 
 
 class MetadataProcessorData(ImageDataGetter):
+    """
+    元数据处理器
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(**kwargs)
         self.multy_process = kwargs.pop('multy_process', False)

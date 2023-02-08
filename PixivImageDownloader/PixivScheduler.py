@@ -7,6 +7,9 @@ from PixivImageDownloader.GifSynthesizer import GifSynthesizer
 
 
 class PixivScheduler(Downloader):
+    """
+    调度器
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.durations = None
