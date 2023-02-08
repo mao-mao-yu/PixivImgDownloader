@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from Error.Error import FuncNotExistsError
 from PixivDownloader.Downloader import Downloader
 from PixivDownloader.GifSynthesizer import GifSynthesizer
 
@@ -87,7 +88,10 @@ class PixivScheduler(Downloader):
             logging.info("Download successful")
             # 多进程合成gif
             logging.info("Start synthesizing gif")
-            gs.synthesize_all_with_pool(content_li, p_li, durations)
+            if self.multy_process:
+                gs.synthesize_all_with_pool(content_li, p_li, durations)
+            else:
+                gs.synthesize_all(content_li, p_li, durations)
             logging.info("Synthetic gif successful")
         else:
             # 否则是普通插图排行榜
