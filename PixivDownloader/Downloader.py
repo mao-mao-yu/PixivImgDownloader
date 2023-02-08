@@ -1,11 +1,11 @@
 import os
 from multiprocessing.dummy import Pool
 from Commons.Commons import binary_writer
-from PixivDownloader.MetadataProcessor import PixivMetadataProcessorData
+from PixivDownloader.MetadataProcessor import MetadataProcessorData
 from PixivDownloader.GifSynthesizer import GifSynthesizer
 
 
-class Downloader(PixivMetadataProcessorData):
+class Downloader(MetadataProcessorData):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
