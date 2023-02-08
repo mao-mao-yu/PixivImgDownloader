@@ -55,6 +55,11 @@ class MetadataProcessorData(ImageDataGetter):
         return artist_name
 
     def get_images_urls(self, id_li: list) -> list:
+        """
+        获取多个图片的链接
+        :param id_li: 图片ID列表
+        :return: 图片url列表
+        """
         data_li = [self.get_image_data(image_id) for image_id in id_li]
         urls = []
         for *no_need, p_count, url in data_li:

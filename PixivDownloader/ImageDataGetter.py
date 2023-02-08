@@ -12,22 +12,29 @@ class ImageDataGetter:
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
             'referer': 'https://www.pixiv.net'
         }
-        self.username = kwargs.pop('username', None)
-        self.password = kwargs.pop('password', None)
-        self.image_size = kwargs.pop('image_size', 'original')
-        self.ugoira_size = kwargs.pop('ugoira_size', 'originalSrc')
-
         self.base_artworks_url = "https://www.pixiv.net/artworks/{}"
         self.base_ugoira_url = "https://www.pixiv.net/ajax/illust/{}/ugoira_meta?lang=zh"
         self.base_user_ajax_url = "https://www.pixiv.net/ajax/user/{}/profile/all?lang=en"
         self.base_ranking_url = "https://www.pixiv.net/ranking.php"
-
+        self.username = kwargs.pop('username', None)
+        self.password = kwargs.pop('password', None)
+        self.image_size = kwargs.pop('image_size', 'original').strip()
+        self.ugoira_size = kwargs.pop('ugoira_size', 'originalSrc').strip()
+        self.ugoira_sizes = ['src', 'originalSrc']
+        self.image_sizes = ['mini', 'thumb', 'small', 'regular', 'original']
         self.cookie_path = kwargs.pop("cookie_path", r'./Cookie/cookie.json')
         self.cookie = self._load_cookie()
         self.headers['cookie'] = self.cookie
         self.ugoira_data = None
         self.artist_data = None
         self.artist_id = None
+        self.check_size()
+
+    def check_size(self):
+        if self.ugoira_size not in self.ugoira_sizes:
+            raise SizeNotExistsError(f"Ugoira don't have this size -> {self.ugoira_size}")
+        if self.image_size not in self.image_sizes:
+            raise SizeNotExistsError(f"Image don't have this size -> {self.image_size}")
 
     def get_artist_data(self, artist_id: str or int) -> MyDict:
         """
@@ -66,7 +73,8 @@ class ImageDataGetter:
 
     def get_image_data(self, image_id: str or int) -> list:
         """
-        用re查找到元数据进行解析
+        用re查找到图片元数据进行解析
+        :param image_id:图片ID
         :return: 插画数据
         """
         image_id = str(image_id)
@@ -77,6 +85,7 @@ class ImageDataGetter:
         data_dic = json.loads(data_str)
         data = MyDict(**data_dic)
         illust_data = data.illust[image_id]
+        print(illust_data.urls)
         illust_data = [
             illust_data.illustType,  # 插画类型
             illust_data.illustTitle,  # 插画title
@@ -88,6 +97,8 @@ class ImageDataGetter:
     def get_ugoira_data(self, image_id: str or int) -> MyDict:
         """
         获取动图数据
+        :param image_id: 动图ID
+        :return: Mydict的动图数据
         """
         image_id = str(image_id)
         url = self.base_ugoira_url.format(image_id)
@@ -118,11 +129,12 @@ class ImageDataGetter:
 
     def _load_cookie(self) -> str:
         """
-        加载cookie
+        加载本地cookie
         :return: cookie
         """
+        self.username = self.username.strip()
+        self.password = self.password.strip()
         if os.path.exists(self.cookie_path):
-            logging.info("Will load cookies")
             return json_loader(self.cookie_path)
         else:
             logging.info("Cookies file not exists,Will get Cookies")

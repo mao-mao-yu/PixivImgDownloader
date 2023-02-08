@@ -16,8 +16,3 @@ class FuncNotExistsError(Exception):
 class SizeNotExistsError(Exception):
     def __init__(self, msg):
         self.msg = msg
-
-
-class Error6666666(Exception):
-    def __init__(self,msg):
-        self.msg = msg
