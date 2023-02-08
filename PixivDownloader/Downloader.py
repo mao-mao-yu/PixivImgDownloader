@@ -15,7 +15,7 @@ class Downloader(MetadataProcessorData):
         :param url: url
         :return: content
         """
-        content = self._requests_get(url).content
+        content = self.requests_get(url).content
         return content
 
     def mp_download(self, u_li: list) -> list:
@@ -24,7 +24,6 @@ class Downloader(MetadataProcessorData):
         :param u_li: url_list
         :return: 二进制数据列表bytes data list
         """
-        self.headers['referer'] = self.homepage_url
         pool = Pool(self.pool_num)
         content_files = pool.map(self.downloader, u_li)
         pool.close()
@@ -37,7 +36,6 @@ class Downloader(MetadataProcessorData):
         :param u_li: url_list
         :return: 二进制数据列表bytes data list
         """
-        self.headers['referer'] = self.homepage_url
         content_files = []
         for url in u_li:
             content_files.append(self.downloader(url))
@@ -74,7 +72,6 @@ class Downloader(MetadataProcessorData):
         :param data_li: The url and path list of the data you want to download.
         :return: None
         """
-        self.headers['referer'] = self.homepage_url
         pool = Pool(self.pool_num)
         pool.map(self.download_with_write, data_li)
         pool.close()
@@ -86,7 +83,6 @@ class Downloader(MetadataProcessorData):
         :param data_li: The url and path list of the data you want to download.
         :return: None
         """
-        self.headers['referer'] = self.homepage_url
         for params in data_li:
             self.download_with_write(params)
 
