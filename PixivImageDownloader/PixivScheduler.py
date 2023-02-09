@@ -1,115 +1,88 @@
 import os
 import time
 import logging
-from Error.Error import FuncNotExistsError
-from PixivImageDownloader.Downloader import Downloader
-from PixivImageDownloader.GifSynthesizer import GifSynthesizer
+from Error.Error import FuncNotExistsError, ContentNotExistsError
+from PixivImageDownloader.Downloader import *
+from PixivImageDownloader.DataProcessor import DataProcessor
+from PixivImageDownloader.ImageDataGetter import ImageDataGetter
 
 
-class PixivScheduler(Downloader):
+class PixivScheduler:
     """
     调度器
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.durations = None
 
-    def rank_urls_and_paths(self, **kwargs) -> list:
+    def __init__(self, **kwargs):
+        self.username = kwargs.pop('username', "")
+        self.password = kwargs.pop('password', "")
+        self.save_path = kwargs.pop('save_path', "./pixiv_img")
+        self.cookie_path = kwargs.pop('cookie_path', r'./Cookie/cookie.json')
+        self.image_size = kwargs.pop('image_size', 'original')
+        self.ugoira_size = kwargs.pop('ugoira_size', 'originalSrc')
+        self.data_processor = DataProcessor(self.image_size,
+                                            self.ugoira_size,
+                                            self.username,
+                                            self.password,
+                                            self.cookie_path)
+
+    def rank_mode(self, **kwargs) -> list:
         """
-        获取排行榜图片源链接和保存路径
-        :param kwargs: Look Pixiv.get_ranking_data
-        :return: pic data [(pic1,pic1_path),(pic2,pic2_path),(pic2,pic2_path2)]
+        排行榜下载模式
+        :return:返回下载需要的参数
         """
-        params = dict(kwargs)
-        mode = params.get('mode', 'daily')
-        date = params.get('date', str(int(time.strftime("%Y%m%d")) - 1))
-        content = params.get('content', "overall")
-        dir_name = f"rank/{mode}_{date}_{content}"
-        id_li = self.get_ranking_data(params=params)
-        if params.get('content') == "ugoira":
-            logging.info("Start get zip url")
-            data_li = self.get_ugoira_urls(id_li)
-            path = os.path.join(self.save_path, dir_name)
-            urls_paths = [(url, os.path.join(path, url.split('/')[-1].split('_')[0]) + '.gif') for url, ds in
-                          data_li]
-            self.durations = [ds for url, ds in data_li]
-            logging.info("Get zip url success")
-            return urls_paths
+        mode = kwargs.pop('mode', 'daily')
+        date = kwargs.pop('date', str(int(time.strftime("%Y%m%d")) - 1))
+        content = kwargs.pop('content', None)
+        p = kwargs.pop('p', '1')
+
+        if content is None:
+            dir_name = os.path.join(self.save_path, 'rank', f"{mode}_{date}_{p}")
         else:
-            logging.info("Start get image url")
-            u_li = self.get_images_urls(id_li)
-            path = os.path.join(self.save_path, dir_name)
-            urls_paths = [(url, os.path.join(path, url.split('/')[-1])) for urls in u_li for url in urls]
-            logging.info("Get image url success")
-            return urls_paths
+            dir_name = os.path.join(self.save_path, 'rank', f"{mode}_{date}_{content}_{p}")
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
 
-    def artist_urls_and_paths(self, artist_id: str or int, content: str) -> list:
-        """
-        通过画师ID获取插画id并处理为图片url和保存路径 Get all works of the artist
-        :artist_id 画师ID :artist_id: artist id
-        :content 有illust和manga两个参数，content: content illustration or manga
-        :return: pic data [(pic1_url,pic1_path),(pic2_url,pic2_path),(pic2_url,pic2_path2)]
-        """
-        if content.strip() == 'illust':
-            func = self.get_artist_illustration
-        elif content.strip() == 'manga':
-            func = self.get_artist_manga
+        url_params = {'mode': mode, 'date': date, 'content': content, 'p': p, 'format': 'json'}
+        rank_data = self.data_processor.get_rank_data(url_params)
+        ids = self.data_processor.get_rank_ids(rank_data)
+
+        logging.info(f"Start get image data")
+        if content == 'ugoira':
+            image_datas = [self.data_processor.get_ugoira_data(img_id) for img_id in ids]
         else:
-            raise FuncNotExistsError(f"Don't have this func:{content}")
-        id_li = func(artist_id)
-        u_li = self.get_images_urls(id_li)
-        artist_name = self.get_artist_name(artist_id)
-        dir_path = os.path.join(self.save_path, 'artist')
-        symbols = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
-        cleaned_artist_name = "".join([char for char in artist_name if char not in symbols])
-        path = os.path.join(dir_path, cleaned_artist_name)
-        urls_and_paths = [(url, os.path.join(path, url.split('/')[-1])) for urls in u_li for url in urls]
-        return urls_and_paths
+            image_datas = [self.data_processor.get_image_data(img_id) for img_id in ids]
+        urls, durations = self.data_processor.get_urls(image_datas, content)
+        logging.info(f"Get image data successful")
 
-    def rank_mode(self, **kwargs) -> None:
-        """
-        下载排行榜图片，Download rank images
-        :param kwargs:
-        可设置参数:
-        模式 mode: daily , weekly , monthly , male 以及后缀_18 , _ai
-        日期 date:默认为昨天 格式 20230205
-        排行榜类型 url content: illust , ugoira , manga
-        页面p 数字  page num
-        :return:
-        """
-        urls_paths = self.rank_urls_and_paths(**kwargs)
-        if self.durations:
-            # 如果有durations帧间隔时间参数则是动图排行榜
-            gs = GifSynthesizer()
-            durations = self.durations
-            self.durations = None
-            u_li, p_li = [], []
-            [(u_li.append(zip_url), p_li.append(path)) for zip_url, path in urls_paths]
-            # 开始下载所有zip
-            logging.info("Start downloading rank")
-            content_li = self.download_all(u_li)
-            logging.info("Download successful")
-            # 多进程合成gif
-            logging.info("Start synthesizing gif")
-            if self.multy_process:
-                gs.synthesize_all_with_pool(content_li, p_li, durations)
-            else:
-                gs.synthesize_all(content_li, p_li, durations)
-            logging.info("Synthetic gif successful")
+        if not durations:
+            params_list = [self.data_processor.check_url(url, dir_name) for url in urls]
         else:
-            # 否则是普通插图排行榜
-            logging.info("Start downloading rank")
-            self.download_all_with_write(urls_paths)
-            logging.info("Download successful")
+            paths = [os.path.join(dir_name, url.split('/')[-1]) for url in urls]
+            params_list = [(paths[i], url, durations[i]) for i, url in enumerate(urls)]
+        return params_list
 
-    def artist_mode(self, artist_id: int or str, content: str = 'illust') -> None:
+    def artist_mode(self, artist_id: str or int, content: str = "illust") -> list:
         """
-        下载画师所有作品
-        :param artist_id:
-        :param content:
-        :return:
+        画师下载模式
+        :return:返回下载需要的参数
         """
-        urls_paths = self.artist_urls_and_paths(artist_id, content)
-        logging.info("Start downloading all works of the artist")
-        self.download_all_with_write(urls_paths)
-        logging.info("Download all images successful")
+        artist_data = self.data_processor.get_artist_data(artist_id)
+        artist_name = self.data_processor.get_artist_name(artist_data)
+        if content == 'illust':
+            ids = self.data_processor.get_artist_illustration(artist_data)
+        elif content == 'manga':
+            ids = self.data_processor.get_artist_manga(artist_data)
+        else:
+            raise ContentNotExistsError(f"Artist don't have {content} works")
+
+        if len(ids) == 0:
+            raise ContentNotExistsError(f"Artist don't have {content} works")
+
+        dir_name = os.path.join(self.save_path, 'artist', artist_name)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+
+        images_data = [self.data_processor.get_image_data(img_id) for img_id in ids]
+        urls, *no_need = self.data_processor.get_urls(images_data)
+        params_list = [self.data_processor.check_url(url, dir_name) for url in urls]
+        return params_list

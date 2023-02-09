@@ -1,113 +1,68 @@
+import multiprocessing
 import os
-from multiprocessing.dummy import Pool
-from Commons.Commons import binary_writer
-from PixivImageDownloader.MetadataProcessor import MetadataProcessorData
-from PixivImageDownloader.GifSynthesizer import GifSynthesizer
+import threading
+from Commons.Commons import *
+from PixivImageDownloader.GifSynthesizer import *
+
+headers = {
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    'referer': 'https://www.pixiv.net'
+}
 
 
-class Downloader(MetadataProcessorData):
+class DownloadQueue:
     """
-    下载器
+    下载队列
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        self.threads_queue = []
 
-    def downloader(self, url: str) -> bytes:
+    def add_task(self, params_list):
         """
-        下载单个文件   Download from one url
-        :param url: url
-        :return: content
+        添加参数到下载队列
         """
-        content = self.requests_get(url).content
-        return content
+        for params in params_list:
+            if len(params) == 2:
+                self.threads_queue.append(ImgDownloadThread(params))
+            elif len(params) == 3:
+                self.threads_queue.append(GifDownloadThread(params))
 
-    def mp_download(self, u_li: list) -> list:
+    def run(self):
         """
-        多进程下载
-        :param u_li: url_list
-        :return: 二进制数据列表bytes data list
+        开始多线程下载
         """
-        pool = Pool(self.pool_num)
-        content_files = pool.map(self.downloader, u_li)
-        pool.close()
-        pool.join()
-        return content_files
+        for t in self.threads_queue:
+            t.start()
+        for t in self.threads_queue:
+            t.join()
 
-    def sp_download(self, u_li: list) -> list:
-        """
-        单进程下载
-        :param u_li: url_list
-        :return: 二进制数据列表bytes data list
-        """
-        content_files = []
-        for url in u_li:
-            content_files.append(self.downloader(url))
-        return content_files
 
-    def download_with_write(self, params: tuple) -> None:
-        """
-        下载并保存，如果url为gif的文件会自动合成
-        :param params: url path
-        :return:
-        """
-        url, path = params
-        path = path.replace("\\", "/")
-        dir_path, filename = os.path.split(path)
-        img_id = filename.split('_')[0]
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        if 'ugoira' in url:
-            url = url.replace('img-original', 'img-zip-ugoira').replace(filename, f'{img_id}_ugoira1920x1080.zip')
-            content = self.downloader(url)
-            filename = img_id + '.gif'
-            path = os.path.join(dir_path, filename)
-            gif = GifSynthesizer()
-            duration = self.get_ugoira_duration(img_id)
-            data = (path, content, duration)
-            gif.synthesize_one(data)
-        else:
-            content = self.downloader(url)
-            binary_writer(path, content)
+class ImgDownloadThread(threading.Thread):
+    """
+    多线程图片下载器
+    """
 
-    def mp_download_with_write(self, data_li: list) -> None:
-        """
-        多进程下载 multy process downloader
-        :param data_li: The url and path list of the data you want to download.
-        :return: None
-        """
-        pool = Pool(self.pool_num)
-        pool.map(self.download_with_write, data_li)
-        pool.close()
-        pool.join()
+    def __init__(self, params):
+        threading.Thread.__init__(self)
+        self.path, self.url = params
+        self.headers = headers
 
-    def sp_download_with_write(self, data_li: list) -> None:
-        """
-        单进程下载 single process downloader
-        :param data_li: The url and path list of the data you want to download.
-        :return: None
-        """
-        for params in data_li:
-            self.download_with_write(params)
+    def run(self):
+        res = requests_get(self.url, self.headers)
+        binary_writer(self.path, res.content)
 
-    def download_all_with_write(self, data_li: list) -> None:
-        """
-        多进程下载并保存所有
-        :param data_li: The url and path list of the data you want to download.
-        :return: None
-        """
-        if self.multy_process:
-            self.mp_download_with_write(data_li)
-        else:
-            self.sp_download_with_write(data_li)
 
-    def download_all(self, u_li: list) -> list:
-        """
-        下载所有并return二进制数据列表
-        :param u_li:
-        :return:
-        """
-        if self.multy_process:
-            content_files = self.mp_download(u_li)
-        else:
-            content_files = self.sp_download(u_li)
-        return content_files
+class GifDownloadThread(threading.Thread):
+    """
+    多线程动图下载器
+    """
+
+    def __init__(self, params):
+        threading.Thread.__init__(self)
+        self.path, self.url, self.duration = params
+        self.headers = headers
+
+    def run(self):
+        content = requests_get(self.url, self.headers).content
+        data = (self.path, content, self.duration)
+        GifSynthesizer.synthesize_one(data)

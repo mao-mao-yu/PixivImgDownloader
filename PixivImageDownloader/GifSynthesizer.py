@@ -12,6 +12,7 @@ class GifSynthesizer:
     """
     GIF合成器 Gif Synthesizer
     """
+
     @staticmethod
     def load_all_images(path: str) -> list:
         """
@@ -29,51 +30,22 @@ class GifSynthesizer:
         return img_list
 
     @staticmethod
-    def get_all_images(content: bytes) -> list:
+    def synthesize_one(data):
         """
         直接从get的res.content获取文件
-        :param content: requests.get.response
+        :param data: response.content,duration,path
         :return: 图片二进制数据列表
         """
+        path, content, durations = data
         zip_ref = zipfile.ZipFile(io.BytesIO(content))
         list_of_files = zip_ref.namelist()
-        img_list = []
-        for filename in list_of_files:
-            img = Image.open(BytesIO(zip_ref.read(filename)))
-            img_list.append(img)
+        img_list = [Image.open(BytesIO(zip_ref.read(filename))) for filename in list_of_files]
         zip_ref.close()
-        return img_list
+        logging.debug(f"Start synthesize {path}")
+        imageio.mimsave(path, img_list, duration=durations)
+        logging.debug(f"Synthesize {path} successful")
 
-    def synthesize_all(self, content_li: list, paths: list, durations: list) -> None:
-        """
-        单线程合成所有gif
-        :param content_li: 压缩文件二进制数据
-        :param paths: 保存路径
-        :param durations: 帧间时间间隔
-        :return: None
-        """
-        for i, content in enumerate(content_li):
-            logging.info(f"Now synthesizing the {i}")
-            img_list = self.get_all_images(content)
-            data = (paths[i], img_list, durations[i])
-            self.synthesize_one(data)
-
-    def synthesize_one(self, data: tuple) -> None:
-        """
-        合成单个gif
-        :param data: 保存路径，图片二进制数据，帧间隔时间， path,img binary data, delay
-        :return: None
-        """
-        path, content, duration = data
-        logging.info(f"Now synthesizing the {path.split('/')[-1]}")
-        img_list = self.get_all_images(content)
-        save_path = path.replace("\\", "/")
-        imageio.mimsave(save_path, img_list, duration=duration)
-
-    def synthesize_all_with_pool(self, content_li: list, paths: list, durations: list) -> None:
-        data_li = []
-        for i, content in enumerate(content_li):
-            data_li.append((paths[i], content, durations[i]))
+    @classmethod
+    def synthesize_all_with_pool(cls, data_li) -> None:
         pool = Pool(8)
-        pool.map(self.synthesize_one, data_li)
-
+        pool.map(cls.synthesize_one, data_li)
