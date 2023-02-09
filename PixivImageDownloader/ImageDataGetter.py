@@ -2,6 +2,7 @@ import os
 from Commons import *
 from Commons.MyDict import MyDict
 
+
 class ImageDataGetter:
     """
     获取图片相关数据

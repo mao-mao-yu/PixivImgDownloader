@@ -1,5 +1,3 @@
-import multiprocessing
-import os
 import threading
 from Commons.Commons import *
 from PixivImageDownloader.GifSynthesizer import *
@@ -14,6 +12,7 @@ class DownloadQueue:
     """
     下载队列
     """
+
     def __init__(self):
         self.threads_queue = []
 
@@ -31,10 +30,12 @@ class DownloadQueue:
         """
         开始多线程下载
         """
+        logging.info(f"Start downloading all images")
         for t in self.threads_queue:
             t.start()
         for t in self.threads_queue:
             t.join()
+        logging.info(f"All images downloaded successfully")
 
 
 class ImgDownloadThread(threading.Thread):

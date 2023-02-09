@@ -1,10 +1,10 @@
 import logging
-from PixivImageDownloader import PixivScheduler
+from PixivImageDownloader import PixivScheduler, DownloadQueue
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     ps = PixivScheduler()
-    # ps.rank_mode(mode='daily', content='ugoira', date='20230205')
-    data = ps.rank_mode(date=20230206)
-    print(data)
-
+    Q = DownloadQueue()
+    Q.add_task(ps.rank_mode(content='illust'))
+    Q.add_task(ps.artist_mode(25760573))
+    Q.run()
