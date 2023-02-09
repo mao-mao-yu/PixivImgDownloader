@@ -44,21 +44,16 @@ def read_zipfile(path) -> zipfile.ZipFile:
     return zip_ref
 
 
-def requests_get(url, headers, *args):
+def requests_get(url, headers, params=None):
     """
     获取网页
     :param url: 要get的网页链接
     :param headers: headers
-    :param args:  param
+    :param params:  param
     :return: 类requests.models.Response
     """
-    if len(args) > 0:
-        params = args[0]
-    else:
-        params = None
     res = requests.get(url=url, headers=headers, params=params)
     if res.status_code == 200:
-        logging.debug(f"Get {url} successfully")
         return res
     elif res.status_code == 401:
         raise CookieFailedError(f"Status_code is {res.status_code}. Cookie is failed ,Check your cookie and reacquire")
