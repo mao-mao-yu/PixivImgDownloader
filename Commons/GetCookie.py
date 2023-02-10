@@ -26,11 +26,11 @@ def get_cookie(username, password) -> str:  # seleniumを使って、cookieをGE
     user_tag = bro.find_element(by=By.XPATH,
                                 value='//fieldset[1]//input')
     user_tag.send_keys(username)
-    time.sleep(random.choice([0.4, 0.5, 0.6]))
+    time.sleep(random.choice([0.4, 0.5, 0.6, 0.7]))
     pass_tag = bro.find_element(by=By.XPATH,
                                 value='//fieldset[2]//input')
     pass_tag.send_keys(password)
-    time.sleep(random.choice([0.3, 0.4, 0.5]))
+    time.sleep(random.choice([0.3, 0.4, 0.5, 0.6]))
     bro.find_element(by=By.XPATH,
                      value='//form//button').click()
     # wait = WebDriverWait(bro, 30)
@@ -44,4 +44,3 @@ def get_cookie(username, password) -> str:  # seleniumを使って、cookieをGE
         cookie_str += item_str
     bro.quit()
     return cookie_str
-

@@ -21,3 +21,8 @@ class SizeNotExistsError(Exception):
 class ContentNotExistsError(Exception):
     def __init__(self, msg):
         self.msg = msg
+
+
+class SearchParamsError(Exception):
+    def __init__(self, msg):
+        self.msg = msg

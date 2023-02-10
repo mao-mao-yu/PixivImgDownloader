@@ -16,7 +16,12 @@ class ImageDataGetter:
         self.base_ugoira_ajax_url = "https://www.pixiv.net/ajax/illust/{}/ugoira_meta"
         self.base_user_ajax_url = "https://www.pixiv.net/ajax/user/{}/profile/all"
         self.base_ranking_url = "https://www.pixiv.net/ranking.php"
-        self.base_image_ajax_url = " https://www.pixiv.net/ajax/illust/{}"
+        self.base_image_ajax_url = "https://www.pixiv.net/ajax/illust/{}"
+
+        self.base_s_artworks_ajax_url = "https://www.pixiv.net/ajax/search/artworks/{}"
+        self.base_s_illustrations_ajax_url = "https://www.pixiv.net/ajax/search/illustrations/{}"
+        self.base_s_manga_ajax_url = "https://www.pixiv.net/ajax/search/manga/{}"
+
         self.username = username
         self.password = password
         self.cookie_path = cookie_path
@@ -48,7 +53,8 @@ class ImageDataGetter:
         """
         # 获取排行榜页面
         url = self.base_ranking_url
-        data = MyDict(**json.loads(requests_get(url, self.headers, params).text))
+        page_text = requests_get(url, self.headers, params).text
+        data = MyDict(**json.loads(page_text))
         return data
 
     def get_image_data(self, image_id: str or int) -> MyDict:
@@ -71,6 +77,51 @@ class ImageDataGetter:
         image_id = str(image_id)
         url = self.base_ugoira_ajax_url.format(image_id)
         data = MyDict(**json.loads(requests_get(url, self.headers).text))
+        return data
+
+    def search_data(self, content: str, params: dict) -> MyDict:
+        """
+        搜索获取作品
+        s_artworks_ajax_url = "https://www.pixiv.net/ajax/search/artworks/{}?word={}"
+        s_illustrations_ajax_url = "https://www.pixiv.net/ajax/search/illustrations/{}?word={}"
+        s_manga_ajax_url = "https://www.pixiv.net/ajax/search/manga/{}?word={}"
+        :param content:关键词
+        :param params:
+        params = {
+        "order": "popular_d",
+        'mode': 'safe',
+        's_mode': 's_tag_full',
+        'type': 'all',
+        'p': '1',
+        'hlt': '1000',
+        'wlt': '1000',
+        'scd': '2022-02-03'
+        }
+        order: date_d按新排序,date按旧排序,会员:全站受欢迎popular_d,受男性欢迎popular_male_d,受女性欢迎popular_female_d
+        p: page num 第几页
+        mode: safe or r18
+        s_mode: 关键词与标签部分一致s_tag，完全一致s_tag_full，标题说明文字s_tc
+        type:
+        artworks_url all所有，
+        illustrations_url illust插画，插画动态插画 illust_and_ugoira,动图ugoira
+        manga_url manga漫画
+        blt bgt: blt=100 100收藏以上 bgt=100 收藏100以下
+        wlt,wgt: weight上下限 wlt=1000 weight1000以上 wgt=2999 weight2999以下
+        hlt,hgt: Height 上下限 hlt=1000 Height1000以上 hgt=2999 Height2999以下
+        scd : 2023-02-03 从20230203到今天的日期以内投稿的
+        :return: Mydict的搜索数据
+        """
+        type_str = params.get('type').strip()
+        if 'all' in type_str:
+            base_url = self.base_s_artworks_ajax_url
+        elif 'illust' in type_str or 'ugoira' in type_str:
+            base_url = self.base_s_illustrations_ajax_url
+        elif 'manga' in type_str:
+            base_url = self.base_s_manga_ajax_url
+        else:
+            raise SearchParamsError(f"Search params type:{type_str} not exists")
+        url = base_url.format(content, content)
+        data = MyDict(**json.loads(requests_get(url, self.headers, params=params).text))
         return data
 
     def _load_cookie(self) -> str:

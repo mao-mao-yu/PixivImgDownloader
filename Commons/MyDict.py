@@ -8,6 +8,15 @@ class MyDict(object):
                 value = MyDict(**value)
             self[key] = value
 
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
+
+    def items(self):
+        return self.__dict__.items()
+
     def __len__(self):
         return len(self.__dict__)
 
@@ -39,4 +48,3 @@ class MyDict(object):
 
     def __repr__(self):
         return self.__dict__.__repr__()
-

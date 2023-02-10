@@ -132,3 +132,9 @@ class DataProcessor(ImageDataGetter):
         contents = rank_data.contents
         illust_ids = [content['illust_id'] for content in contents]
         return illust_ids
+
+    @staticmethod
+    def get_searched_data_ids(searched_data: MyDict):
+        searched_data = list(searched_data.body.values())[0]
+        ids = [img_data['id'] for img_data in searched_data.data]
+        return ids

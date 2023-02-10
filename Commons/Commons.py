@@ -5,40 +5,55 @@ import requests
 from Error.Error import *
 
 
-def json_loader(path) -> str:
-    path = path.replace('\\', '/')
+def replace_path(func):
+    """
+    没什么用 就是把path改成统一格式/
+    """
+
+    def wrapper(*args, **kwargs):
+        path, *no_need = args
+        path = path.replace('\\', '/')
+        args = path, *no_need
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@replace_path
+def json_loader(path: str) -> str:
     with open(path, 'r', encoding='utf-8') as f:
         txt = json.load(f)
         logging.debug(f"{path} load successfully")
     return txt
 
 
-def loader(path) -> str:
-    path = path.replace('\\', '/')
+@replace_path
+def loader(path: str) -> str:
     with open(path, 'r', encoding='utf-8') as f:
         txt = f.read()
         logging.debug(f"{path} load successfully")
     return txt
 
 
-def writer(path, text):
-    path = path.replace('\\', '/')
+@replace_path
+def writer(path: str, text: str):
     with open(path, 'w+', encoding='utf-8') as f:
         f.write(text)
     logging.debug(f"{path} download successfully")
 
 
-def json_writer(path, text):
+@replace_path
+def json_writer(path: str, text: str) -> None:
     writer(path, json.dumps(text, sort_keys=False, indent=4, separators=(',', ':'), ensure_ascii=False))
 
 
-def binary_writer(path, content):
-    path = path.replace('\\', '/')
+@replace_path
+def binary_writer(path: str, content: bytes) -> None:
     with open(path, 'wb+') as f:
         f.write(content)
     logging.debug(f"{path} download successfully")
 
 
+@replace_path
 def read_zipfile(path) -> zipfile.ZipFile:
     zip_ref = zipfile.ZipFile(path, 'r')
     return zip_ref
