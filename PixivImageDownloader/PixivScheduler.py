@@ -91,7 +91,7 @@ class PixivScheduler:
         "order": "popular_d",
         'mode': 'safe',
         's_mode': 's_tag',
-        'type': 'ugoira',
+        'type': 'illust',
         'p': '1',
         'hlt': '1000',
         'wlt': '1000',
