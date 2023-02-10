@@ -57,28 +57,6 @@ class ImageDataGetter:
         data = MyDict(**json.loads(page_text))
         return data
 
-    def get_image_data(self, image_id: str or int) -> MyDict:
-        """
-        ajax获取插画数据
-        :param image_id:图片ID
-        :return: 插画数据
-        """
-        image_id = str(image_id)
-        url = self.base_image_ajax_url.format(image_id)
-        data = MyDict(**json.loads(requests_get(url, self.headers).text))
-        return data
-
-    def get_ugoira_data(self, image_id: str or int) -> MyDict:
-        """
-        ajax获取动图数据
-        :param image_id: 动图ID
-        :return: Mydict的动图数据
-        """
-        image_id = str(image_id)
-        url = self.base_ugoira_ajax_url.format(image_id)
-        data = MyDict(**json.loads(requests_get(url, self.headers).text))
-        return data
-
     def search_data(self, content: str, params: dict) -> MyDict:
         """
         搜索获取作品
@@ -122,6 +100,28 @@ class ImageDataGetter:
             raise SearchParamsError(f"Search params type:{type_str} not exists")
         url = base_url.format(content, content)
         data = MyDict(**json.loads(requests_get(url, self.headers, params=params).text))
+        return data
+
+    def get_image_data(self, image_id: str or int) -> MyDict:
+        """
+        ajax获取插画数据
+        :param image_id:图片ID
+        :return: 插画数据
+        """
+        image_id = str(image_id)
+        url = self.base_image_ajax_url.format(image_id)
+        data = MyDict(**json.loads(requests_get(url, self.headers).text))
+        return data
+
+    def get_ugoira_data(self, image_id: str or int) -> MyDict:
+        """
+        ajax获取动图数据
+        :param image_id: 动图ID
+        :return: Mydict的动图数据
+        """
+        image_id = str(image_id)
+        url = self.base_ugoira_ajax_url.format(image_id)
+        data = MyDict(**json.loads(requests_get(url, self.headers).text))
         return data
 
     def _load_cookie(self) -> str:
