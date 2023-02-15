@@ -9,8 +9,8 @@ class DataProcessor(ImageDataGetter):
     元数据处理器
     """
 
-    def __init__(self, image_size: str, ugoira_size: str, username, password, cookie_path):
-        super().__init__(username, password, cookie_path)
+    def __init__(self, image_size: str, ugoira_size: str, username, password):
+        super().__init__(username, password)
         self.image_size = image_size.strip()
         self.ugoira_size = ugoira_size.strip()
         self.ugoira_sizes = ['src', 'originalSrc']

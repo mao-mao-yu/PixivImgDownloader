@@ -4,12 +4,11 @@ from PixivImageDownloader import PixivScheduler, DownloadQueue, ImageDataGetter,
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
-    # I = ImageDataGetter("", "", r"H:\pyproj\learn_python\PixivImgDownloader\Cookie\cookie.json")
+    # I = ImageDataGetter("", "")
     P = PixivScheduler()
-    Q = DownloadQueue()
-
-    Q.add_task(P.artist_mode(15804839))
+    Q = DownloadQueue(max_workers=16)
+    # Q.add_task(P.artist_mode(25760573))
     # https://www.pixiv.net/ranking.php?mode=daily&content=illust&date=20230208
-    Q.add_task(P.rank_mode(mode='daily', content='illust', date='20230208'))
-    Q.add_task(P.search_mode("初音ミク"))
-    Q.run()
+    # Q.add_task(P.rank_mode(mode='daily', content='illust', date='20230208'))
+    # Q.add_task(P.search_mode("初音ミク"))
+    # Q.run()

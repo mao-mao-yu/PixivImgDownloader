@@ -1,6 +1,8 @@
+import logging
 import threading
-from Commons.Commons import *
-from PixivImageDownloader.GifSynthesizer import *
+from Commons.Commons import requests_get, binary_writer
+from PixivImageDownloader.GifSynthesizer import GifSynthesizer
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
@@ -13,8 +15,9 @@ class DownloadQueue:
     下载队列
     """
 
-    def __init__(self):
+    def __init__(self, max_workers=8):
         self.threads_queue = []
+        self.max_workers = max_workers
 
     def add_task(self, params_list):
         """
@@ -31,10 +34,10 @@ class DownloadQueue:
         开始多线程下载
         """
         logging.info(f"Start downloading all images")
-        for t in self.threads_queue:
-            t.start()
-        for t in self.threads_queue:
-            t.join()
+        if self.threads_queue:
+            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                all_tasks = [executor.submit(t.run()) for t in self.threads_queue]
+                wait(all_tasks, return_when=ALL_COMPLETED)
         logging.info(f"All images downloaded successfully")
 
 

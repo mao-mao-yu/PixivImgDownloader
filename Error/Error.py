@@ -23,6 +23,16 @@ class ContentNotExistsError(Exception):
         self.msg = msg
 
 
-class SearchParamsError(Exception):
+class ParamsError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
+class ServerError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
+class ServiceUnavailableError(Exception):
     def __init__(self, msg):
         self.msg = msg

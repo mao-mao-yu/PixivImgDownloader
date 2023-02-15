@@ -1,6 +1,7 @@
 import os
 import time
-from PixivImageDownloader.Downloader import *
+import logging
+from Error.Error import ContentNotExistsError
 from PixivImageDownloader.DataProcessor import DataProcessor
 
 
@@ -12,15 +13,13 @@ class PixivScheduler:
     def __init__(self, **kwargs):
         self.username = kwargs.pop('username', "")
         self.password = kwargs.pop('password', "")
-        self.save_path = kwargs.pop('save_path', "./pixiv_img")
-        self.cookie_path = kwargs.pop('cookie_path', r'./Cookie/cookie.json')
+        self.save_path = kwargs.pop('save_path', os.path.join(os.path.dirname(__file__), '..', 'pixiv_img'))
         self.image_size = kwargs.pop('image_size', 'original')
         self.ugoira_size = kwargs.pop('ugoira_size', 'originalSrc')
         self.data_processor = DataProcessor(self.image_size,
                                             self.ugoira_size,
                                             self.username,
-                                            self.password,
-                                            self.cookie_path)
+                                            self.password)
 
     def rank_mode(self, **kwargs) -> list:
         """

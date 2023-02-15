@@ -1,5 +1,8 @@
 import os
-from Commons import *
+import json
+import logging
+from Error.Error import ParamsError
+from Commons import requests_get, json_loader, json_writer
 from Commons.MyDict import MyDict
 
 
@@ -8,7 +11,7 @@ class ImageDataGetter:
     获取图片相关数据
     """
 
-    def __init__(self, username, password, cookie_path):
+    def __init__(self, username, password):
         self.headers = {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
             'referer': 'https://www.pixiv.net'
@@ -24,7 +27,7 @@ class ImageDataGetter:
 
         self.username = username
         self.password = password
-        self.cookie_path = cookie_path
+        self.cookie_path = os.path.join(os.path.dirname(__file__), '..', 'Cookie/cookie.json')
         self.cookie = self._load_cookie()
         self.headers['cookie'] = self.cookie
 
@@ -97,7 +100,7 @@ class ImageDataGetter:
         elif 'manga' in type_str:
             base_url = self.base_s_manga_ajax_url
         else:
-            raise SearchParamsError(f"Search params type:{type_str} not exists")
+            raise ParamsError(f"Search params type:{type_str} not exists")
         url = base_url.format(content, content)
         data = MyDict(**json.loads(requests_get(url, self.headers, params=params).text))
         return data
