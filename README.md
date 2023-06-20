@@ -5,7 +5,7 @@
 ### This code is provided for learning and research purposes only and is not intended for illegal activities.  
 ### 代码仅供学习和研究使用，严禁用于非法活动。  
 <br>
-请勿干扰服务器的运行，请勿下载不被允许下载的数据。
+请勿干扰服务器的运行，请添加1-5秒的sleep。
 作为一个喜欢收藏好看插画的人，每次用手点保存图片实在是效率低下，
 就花了点时间用python写了个能批量下载的程序，顺便加深一下理解。
 
